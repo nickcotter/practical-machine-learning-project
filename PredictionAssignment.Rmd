@@ -78,7 +78,7 @@ dim(pml_training)
 dim(pml_testing)
 ```
 
-This has brought the number of possible features down from 159 to 52
+This has brought the number of possible features down from 159 to 52.
 
 # Building The Prediction Model
 
@@ -90,7 +90,7 @@ levels(pml_training$classe)
 
 Each of these describes how well the exercise was performed; A indicates that the exercise was performed correctly, the others that it was not.
 
-While a majority of exercises was performed correctly the distribution is pretty even:
+While a majority of exercises was performed correctly (classe A) there are many examples of the other outcomes:
 
 ```{r plotclasse}
 barplot(summary(pml_training$classe), main="Exercise Outcome Distribution", xlab="Outcome (classe)",
@@ -98,9 +98,9 @@ barplot(summary(pml_training$classe), main="Exercise Outcome Distribution", xlab
 ```
 
 
-## Partition the training data into training & test
+## Cross Validation
 
-Let's split the pml_training data into 75% training, 25% test. 
+Let's split the pml_training data into 75% training, 25% test. We will train the model on the former and validate on the latter.
 
 ```{r partitiondata}
 partitionIndices <- createDataPartition(y = pml_training$classe, p=0.75, list=FALSE)
@@ -113,7 +113,7 @@ dim(testing_set)
 
 ## Model Selection
 
-This is a multiclass problem with 52 possible features. Random forests might be a good choice here.
+This is a multiclass problem with a large sample size and 52 possible features. Random forests might be a good choice here.
 
 Let's train a random forest:
 
@@ -140,5 +140,3 @@ Let's print the predictions for each of the tests.
 pml_testing_prediction <- predict(model, pml_testing, type="class")
 pml_testing_prediction
 ```
-
-## TODO cross validation
