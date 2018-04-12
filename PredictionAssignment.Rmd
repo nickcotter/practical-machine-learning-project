@@ -12,9 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Goal
 
-One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants.
-
-The goal of your project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. You may use any of the other variables to predict with. You should create a report describing how you built your model, how you used cross validation, what you think the expected out of sample error is, and why you made the choices you did. You will also use your prediction model to predict 20 different test cases.
+Use data from personal fitness devices (in particular accelerometers on the belt, forearm, arm, and dumbell) of 6 participants to predict how well they performed an exercise.
 
 ## Background
 
@@ -32,8 +30,14 @@ The test data are available here:
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
 
-## Libraries
+## Setup & Libraries
 
+Let's set a seed for reproducability purposes:
+```{r setseed}
+set.seed(54321)
+```
+
+We will be using the following libraries:
 ```{r libraries, message=F, warning=F}
 require(knitr)
 require(caret)
@@ -50,18 +54,23 @@ pml_testing <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml
 dim(pml_training)
 dim(pml_testing)
 ```
+So we have 159 possible feature columns. We will pre-process the data before training the model to reduce the number of features.
 
 # Pre-processing
 
 ## Cleaning The Training Data
-```{r cleantrainingdata}
+
+Let's remove columns which only contain missing values.
+```{r removeemptycolumns}
 # remove columns with only missing values
 pml_training <- pml_training[,colSums(is.na(pml_training)) == 0]
 pml_testing <- pml_testing[,colSums(is.na(pml_testing)) == 0]
 dim(pml_training)
 dim(pml_testing)
+```
 
-# remove irrelevant columns
+Some of the columns are metadata that should not be included - let's remove them.
+```{r removeirrelvantcolumns}
 cols_to_remove <- c("X", "user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window", "num_window")
 pml_training <- pml_training[, -which(names(pml_training) %in% cols_to_remove)]
 pml_testing <- pml_testing[, -which(names(pml_testing) %in% cols_to_remove)]
@@ -69,15 +78,31 @@ dim(pml_training)
 dim(pml_testing)
 ```
 
+This has brought the number of possible features down from 159 to 52
 
 # Building The Prediction Model
 
-TODO describe the data - esp. the classe variable
+The classe variable has 5 levels:
+
+```{r classevariable}
+levels(pml_training$classe)
+```
+
+Each of these describes how well the exercise was performed; A indicates that the exercise was performed correctly, the others that it was not.
+
+While a majority of exercises was performed correctly the distribution is pretty even:
+
+```{r plotclasse}
+barplot(summary(pml_training$classe), main="Exercise Outcome Distribution", xlab="Outcome (classe)",
+        ylab = "Frequency")
+```
 
 
 ## Partition the training data into training & test
+
+Let's split the pml_training data into 75% training, 25% test. 
+
 ```{r partitiondata}
-set.seed(1234)
 partitionIndices <- createDataPartition(y = pml_training$classe, p=0.75, list=FALSE)
 training_set <- pml_training[partitionIndices, ]
 testing_set <- pml_training[-partitionIndices, ]
@@ -86,14 +111,18 @@ dim(testing_set)
 ```
 
 
-## Random Forest
+## Model Selection
 
-TODO elaborate on why we use random forest - classes of output, sample size, nonlinear etc.
+This is a multiclass problem with 52 possible features. Random forests might be a good choice here.
+
+Let's train a random forest:
 
 ```{r predictionmodel}
 # model
 model <- randomForest(classe ~ ., data=training_set, method="class")
 ```
+
+And try it out on the test data:
 
 ```{r testsetaccuracy}
 # prediction
@@ -101,19 +130,15 @@ prediction <- predict(model, testing_set, type="class")
 confusionMatrix(prediction, testing_set$classe)
 ```
 
+The accuracy of this model is 0.995. The expected out-of-sample error is 0.005, that is, 0.5%.
 
 ## Predictions For Test Set
+
+Let's print the predictions for each of the tests.
 
 ```{r quizpredictions}
 pml_testing_prediction <- predict(model, pml_testing, type="class")
 pml_testing_prediction
 ```
 
-
-
-
-## TODO building
 ## TODO cross validation
-## TODO errors
-## TODO reasoning behind choices made
-## TODO predict 20 different test cases (Quiz)
