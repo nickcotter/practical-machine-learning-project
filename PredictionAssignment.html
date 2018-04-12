@@ -171,13 +171,13 @@ dim(pml_training)</code></pre>
 <pre class="r"><code>dim(pml_testing)</code></pre>
 <pre><code>## [1] 20 60</code></pre>
 <pre class="r"><code># remove irrelevant columns
-cols_to_remove &lt;- c(&quot;user_name&quot;, &quot;raw_timestamp_part_1&quot;, &quot;raw_timestamp_part_2&quot;, &quot;cvtd_timestamp&quot;, &quot;new_window&quot;, &quot;num_window&quot;)
+cols_to_remove &lt;- c(&quot;X&quot;, &quot;user_name&quot;, &quot;raw_timestamp_part_1&quot;, &quot;raw_timestamp_part_2&quot;, &quot;cvtd_timestamp&quot;, &quot;new_window&quot;, &quot;num_window&quot;)
 pml_training &lt;- pml_training[, -which(names(pml_training) %in% cols_to_remove)]
 pml_testing &lt;- pml_testing[, -which(names(pml_testing) %in% cols_to_remove)]
 dim(pml_training)</code></pre>
-<pre><code>## [1] 19622    54</code></pre>
+<pre><code>## [1] 19622    53</code></pre>
 <pre class="r"><code>dim(pml_testing)</code></pre>
-<pre><code>## [1] 20 54</code></pre>
+<pre><code>## [1] 20 53</code></pre>
 </div>
 </div>
 <div id="building-the-prediction-model" class="section level1">
@@ -190,9 +190,9 @@ partitionIndices &lt;- createDataPartition(y = pml_training$classe, p=0.75, list
 training_set &lt;- pml_training[partitionIndices, ]
 testing_set &lt;- pml_training[-partitionIndices, ]
 dim(training_set)</code></pre>
-<pre><code>## [1] 14718    54</code></pre>
+<pre><code>## [1] 14718    53</code></pre>
 <pre class="r"><code>dim(testing_set)</code></pre>
-<pre><code>## [1] 4904   54</code></pre>
+<pre><code>## [1] 4904   53</code></pre>
 </div>
 <div id="random-forest" class="section level2">
 <h2>Random Forest</h2>
@@ -206,125 +206,40 @@ confusionMatrix(prediction, testing_set$classe)</code></pre>
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1395    1    0    0    0
-##          B    0  948    0    0    0
-##          C    0    0  855    0    0
-##          D    0    0    0  804    0
+##          A 1394    3    0    0    0
+##          B    1  944   10    0    0
+##          C    0    2  845    7    0
+##          D    0    0    0  797    0
 ##          E    0    0    0    0  901
 ## 
 ## Overall Statistics
-##                                      
-##                Accuracy : 0.9998     
-##                  95% CI : (0.9989, 1)
-##     No Information Rate : 0.2845     
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
-##                                      
-##                   Kappa : 0.9997     
-##  Mcnemar's Test P-Value : NA         
+##                                         
+##                Accuracy : 0.9953        
+##                  95% CI : (0.993, 0.997)
+##     No Information Rate : 0.2845        
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16     
+##                                         
+##                   Kappa : 0.9941        
+##  Mcnemar's Test P-Value : NA            
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            1.0000   0.9989   1.0000   1.0000   1.0000
-## Specificity            0.9997   1.0000   1.0000   1.0000   1.0000
-## Pos Pred Value         0.9993   1.0000   1.0000   1.0000   1.0000
-## Neg Pred Value         1.0000   0.9997   1.0000   1.0000   1.0000
+## Sensitivity            0.9993   0.9947   0.9883   0.9913   1.0000
+## Specificity            0.9991   0.9972   0.9978   1.0000   1.0000
+## Pos Pred Value         0.9979   0.9885   0.9895   1.0000   1.0000
+## Neg Pred Value         0.9997   0.9987   0.9975   0.9983   1.0000
 ## Prevalence             0.2845   0.1935   0.1743   0.1639   0.1837
-## Detection Rate         0.2845   0.1933   0.1743   0.1639   0.1837
-## Detection Prevalence   0.2847   0.1933   0.1743   0.1639   0.1837
-## Balanced Accuracy      0.9999   0.9995   1.0000   1.0000   1.0000</code></pre>
+## Detection Rate         0.2843   0.1925   0.1723   0.1625   0.1837
+## Detection Prevalence   0.2849   0.1947   0.1741   0.1625   0.1837
+## Balanced Accuracy      0.9992   0.9960   0.9930   0.9956   1.0000</code></pre>
 </div>
 <div id="predictions-for-test-set" class="section level2">
 <h2>Predictions For Test Set</h2>
-<pre class="r"><code>head(pml_testing)</code></pre>
-<pre><code>##   X roll_belt pitch_belt yaw_belt total_accel_belt gyros_belt_x
-## 1 1    123.00      27.00    -4.75               20        -0.50
-## 2 2      1.02       4.87   -88.90                4        -0.06
-## 3 3      0.87       1.82   -88.50                5         0.05
-## 4 4    125.00     -41.60   162.00               17         0.11
-## 5 5      1.35       3.33   -88.60                3         0.03
-## 6 6     -5.92       1.59   -87.70                4         0.10
-##   gyros_belt_y gyros_belt_z accel_belt_x accel_belt_y accel_belt_z
-## 1        -0.02        -0.46          -38           69         -179
-## 2        -0.02        -0.07          -13           11           39
-## 3         0.02         0.03            1           -1           49
-## 4         0.11        -0.16           46           45         -156
-## 5         0.02         0.00           -8            4           27
-## 6         0.05        -0.13          -11          -16           38
-##   magnet_belt_x magnet_belt_y magnet_belt_z roll_arm pitch_arm yaw_arm
-## 1           -13           581          -382     40.7    -27.80     178
-## 2            43           636          -309      0.0      0.00       0
-## 3            29           631          -312      0.0      0.00       0
-## 4           169           608          -304   -109.0     55.00    -142
-## 5            33           566          -418     76.1      2.76     102
-## 6            31           638          -291      0.0      0.00       0
-##   total_accel_arm gyros_arm_x gyros_arm_y gyros_arm_z accel_arm_x
-## 1              10       -1.65        0.48       -0.18          16
-## 2              38       -1.17        0.85       -0.43        -290
-## 3              44        2.10       -1.36        1.13        -341
-## 4              25        0.22       -0.51        0.92        -238
-## 5              29       -1.96        0.79       -0.54        -197
-## 6              14        0.02        0.05       -0.07         -26
-##   accel_arm_y accel_arm_z magnet_arm_x magnet_arm_y magnet_arm_z
-## 1          38          93         -326          385          481
-## 2         215         -90         -325          447          434
-## 3         245         -87         -264          474          413
-## 4         -57           6         -173          257          633
-## 5         200         -30         -170          275          617
-## 6         130         -19          396          176          516
-##   roll_dumbbell pitch_dumbbell yaw_dumbbell total_accel_dumbbell
-## 1     -17.73748       24.96085    126.23596                    9
-## 2      54.47761      -53.69758    -75.51480                   31
-## 3      57.07031      -51.37303    -75.20287                   29
-## 4      43.10927      -30.04885   -103.32003                   18
-## 5    -101.38396      -53.43952    -14.19542                    4
-## 6      62.18750      -50.55595    -71.12063                   29
-##   gyros_dumbbell_x gyros_dumbbell_y gyros_dumbbell_z accel_dumbbell_x
-## 1             0.64             0.06            -0.61               21
-## 2             0.34             0.05            -0.71             -153
-## 3             0.39             0.14            -0.34             -141
-## 4             0.10            -0.02             0.05              -51
-## 5             0.29            -0.47            -0.46              -18
-## 6            -0.59             0.80             1.10             -138
-##   accel_dumbbell_y accel_dumbbell_z magnet_dumbbell_x magnet_dumbbell_y
-## 1              -15               81               523              -528
-## 2              155             -205              -502               388
-## 3              155             -196              -506               349
-## 4               72             -148              -576               238
-## 5              -30               -5              -424               252
-## 6              166             -186              -543               262
-##   magnet_dumbbell_z roll_forearm pitch_forearm yaw_forearm
-## 1               -56          141         49.30       156.0
-## 2               -36          109        -17.60       106.0
-## 3                41          131        -32.60        93.0
-## 4                53            0          0.00         0.0
-## 5               312         -176         -2.16       -47.9
-## 6                96          150          1.46        89.7
-##   total_accel_forearm gyros_forearm_x gyros_forearm_y gyros_forearm_z
-## 1                  33            0.74           -3.34           -0.59
-## 2                  39            1.12           -2.78           -0.18
-## 3                  34            0.18           -0.79            0.28
-## 4                  43            1.38            0.69            1.80
-## 5                  24           -0.75            3.10            0.80
-## 6                  43           -0.88            4.26            1.35
-##   accel_forearm_x accel_forearm_y accel_forearm_z magnet_forearm_x
-## 1            -110             267            -149             -714
-## 2             212             297            -118             -237
-## 3             154             271            -129              -51
-## 4             -92             406             -39             -233
-## 5             131             -93             172              375
-## 6             230             322            -144             -300
-##   magnet_forearm_y magnet_forearm_z problem_id
-## 1              419              617          1
-## 2              791              873          2
-## 3              698              783          3
-## 4              783              521          4
-## 5             -787               91          5
-## 6              800              884          6</code></pre>
 <pre class="r"><code>pml_testing_prediction &lt;- predict(model, pml_testing, type=&quot;class&quot;)
 pml_testing_prediction</code></pre>
 <pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
-##  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A  A 
+##  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
 ## Levels: A B C D E</code></pre>
 </div>
 <div id="todo-building" class="section level2">
