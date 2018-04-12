@@ -31,32 +31,86 @@ The test data are available here:
 
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
+
 ## Libraries
 
 ```{r libraries, message=F, warning=F}
 require(knitr)
+require(caret)
+require(randomForest)
 ```
 
 # Load Data
 
 ```{r loaddata, cache=TRUE}
-pml_training <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv")
-pml_testing <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv")
+# load training data
+pml_training <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", na.strings=c("NA","#DIV/0!", ""))
+# load testing data - for quiz
+pml_testing <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", na.strings=c("NA","#DIV/0!", ""))
+dim(pml_training)
+dim(pml_testing)
 ```
 
-## Training Data Summary
+# Pre-processing
 
-```{r trainingdatasummary}
-kable(summary(pml_training))
+## Cleaning The Training Data
+```{r cleantrainingdata}
+# remove columns with only missing values
+pml_training <- pml_training[,colSums(is.na(pml_training)) == 0]
+pml_testing <- pml_testing[,colSums(is.na(pml_testing)) == 0]
+dim(pml_training)
+dim(pml_testing)
+
+# remove irrelevant columns
+cols_to_remove <- c("user_name", "raw_timestamp_part_1", "raw_timestamp_part_2", "cvtd_timestamp", "new_window", "num_window")
+pml_training <- pml_training[, -which(names(pml_training) %in% cols_to_remove)]
+pml_testing <- pml_testing[, -which(names(pml_testing) %in% cols_to_remove)]
+dim(pml_training)
+dim(pml_testing)
 ```
 
-## Test Data Summary
-
-```{r testdatasummary}
-kable(summary(pml_testing))
-```
 
 # Building The Prediction Model
+
+TODO describe the data - esp. the classe variable
+
+
+## Partition the training data into training & test
+```{r partitiondata}
+set.seed(1234)
+partitionIndices <- createDataPartition(y = pml_training$classe, p=0.75, list=FALSE)
+training_set <- pml_training[partitionIndices, ]
+testing_set <- pml_training[-partitionIndices, ]
+dim(training_set)
+dim(testing_set)
+```
+
+
+## Random Forest
+
+TODO elaborate on why we use random forest - classes of output, sample size, nonlinear etc.
+
+```{r predictionmodel}
+# model
+model <- randomForest(classe ~ ., data=training_set, method="class")
+```
+
+```{r testsetaccuracy}
+# prediction
+prediction <- predict(model, testing_set, type="class")
+confusionMatrix(prediction, testing_set$classe)
+```
+
+
+## Predictions For Test Set
+
+```{r quizpredictions}
+pml_testing_prediction <- predict(model, pml_testing, type="class")
+pml_testing_prediction
+```
+
+
+
 
 ## TODO building
 ## TODO cross validation
